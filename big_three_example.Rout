@@ -1,0 +1,128 @@
+
+R version 2.13.0 (2011-04-13)
+Copyright (C) 2011 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> # This is the simplest code for applying the DFT model using the DFT.R
+> # library and the DFT.so and DFT_parallel.so C libraries to the similarity,
+> # attraction, and compromise effects described in Roe, Busemeyer, and
+> # Townsend (2001). Results should match the matlab code at
+> # http://mypage.iu.edu/~jbusemey/Dec_lect/Dec_prg/sim_mdf.txt (in
+> # particular, the first, fourth, and sixth problems). The single-thread
+> # version of the code is about 300 times faster than the matlab version. The
+> # multi-threaded version is, obviously, faster still.
+> 
+> # R CMD BATCH big_three_example.R should produce example output
+> 
+> rm(list=ls())
+> 
+> # Load the DFT library
+> # Note, you will need the DFT.so and DFT_parallel.so libraries in the same directory
+> source("DFT.R")
+> 
+> 
+> iterations <- 100000
+> (C <- matrix(c(1.0, -0.5, -0.5, 
++               -0.5,  1.0, -0.5, 
++               -0.5, -0.5,  1.0), nrow=3, byrow=TRUE))
+     [,1] [,2] [,3]
+[1,]  1.0 -0.5 -0.5
+[2,] -0.5  1.0 -0.5
+[3,] -0.5 -0.5  1.0
+> (W <- c(.5, .5))
+[1] 0.5 0.5
+> (T <- rep(17.5, 3))
+[1] 17.5 17.5 17.5
+> (P <- rep(0.0, 3))
+[1] 0 0 0
+> (sigma <- 1.0)
+[1] 1
+> 
+> # Similarity effect
+> (M <- matrix(c(1.0, 3.0, 
++                3.0, 1.0, 
++                0.9, 3.1), nrow=3, byrow=T))
+     [,1] [,2]
+[1,]  1.0  3.0
+[2,]  3.0  1.0
+[3,]  0.9  3.1
+> (S <- matrix(c(0.9500000, -0.0122316, -0.04999996, 
++               -0.0122316,  0.9500000, -0.0090303, 
++               -0.0499996, -0.0090303, 0.9500000),
++     nrow=3, byrow=TRUE))
+           [,1]       [,2]        [,3]
+[1,]  0.9500000 -0.0122316 -0.04999996
+[2,] -0.0122316  0.9500000 -0.00903030
+[3,] -0.0499996 -0.0090303  0.95000000
+> 
+> result <- DFT(C, M, W, S, T, P, sigma, iterations=iterations, seed=1, parallel=TRUE)
+> result/iterations
+[1] 0.30468 0.39536 0.29996
+> 
+> 
+> 
+> # Compromise effect
+> (M <- matrix(c(1.0, 3.0, 
++                3.0, 1.0, 
++                2.0, 2.0), nrow=3, byrow=T))
+     [,1] [,2]
+[1,]    1    3
+[2,]    3    1
+[3,]    2    2
+> (S <- matrix(c(0.950000, -0.012232, -0.045788, 
++               -0.012232,  0.950000, -0.045788, 
++               -0.045788, -0.045788,  0.950000),
++     nrow=3, byrow=TRUE))
+          [,1]      [,2]      [,3]
+[1,]  0.950000 -0.012232 -0.045788
+[2,] -0.012232  0.950000 -0.045788
+[3,] -0.045788 -0.045788  0.950000
+> 
+> result <- DFT(C, M, W, S, T, P, sigma, iterations=iterations, seed=1, parallel=TRUE)
+> result/iterations
+[1] 0.28229 0.28686 0.43085
+> 
+> 
+> 
+> # Attraction effect
+> (M <- matrix(c(1.0, 3.0, 
++                3.0, 1.0, 
++                0.5, 2.5), nrow=3, byrow=T))
+     [,1] [,2]
+[1,]  1.0  3.0
+[2,]  3.0  1.0
+[3,]  0.5  2.5
+> (S <- matrix(c(0.95, -1.2232e-02, -2.2647e-02, 
++               -1.2232e-02, 0.95, -6.7034e-04,
++               -2.2647e-02, -6.7034e-04, 0.95),
++     nrow=3, byrow=TRUE))
+          [,1]        [,2]        [,3]
+[1,]  0.950000 -0.01223200 -0.02264700
+[2,] -0.012232  0.95000000 -0.00067034
+[3,] -0.022647 -0.00067034  0.95000000
+> 
+> result <- DFT(C, M, W, S, T, P, sigma, iterations=iterations, seed=1, parallel=TRUE)
+> result/iterations
+[1] 0.55764 0.44236 0.00000
+> 
+> 
+> proc.time()
+   user  system elapsed 
+ 11.468   0.068   6.074 

@@ -1,0 +1,450 @@
+
+R version 2.13.0 (2011-04-13)
+Copyright (C) 2011 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> # This is the simplest code for applying the DFT model using the DFT.R
+> # library and the DFT.so and DFT_parallel.so C libraries to the Kahneman and
+> # Tversky (1979) data.
+> #
+> # R CMD BATCH Kahneman_Tversky_1979_example.R should produce example output
+> 
+> rm(list=ls())
+> 
+> # Load the DFT library
+> # Note, you will need the DFT.so and DFT_parallel.so libraries in the same directory
+> source("DFT.R")
+> 
+> # Load the Kahneman and Tversky (1979) choices
+> source("Kahneman_Tversky_1979_data.R")
+> # See the choices
+> choices
+$c1
+$c1$g1A
+        x    p
+[1,] 2500 0.33
+[2,] 2400 0.66
+[3,]    0 0.01
+
+$c1$g1B
+        x p
+[1,] 2400 1
+
+
+$c2
+$c2$g2A
+        x    p
+[1,] 2500 0.33
+[2,]    0 0.67
+
+$c2$g2B
+        x    p
+[1,] 2400 0.34
+[2,]    0 0.66
+
+
+$c3
+$c3$g3A
+        x   p
+[1,] 4000 0.8
+[2,]    0 0.2
+
+$c3$g3B
+        x p
+[1,] 3000 1
+
+
+$c4
+$c4$g4A
+        x   p
+[1,] 4000 0.2
+[2,]    0 0.8
+
+$c4$g4B
+        x    p
+[1,] 3000 0.25
+[2,]    0 0.75
+
+
+$c7
+$c7$g7A
+        x    p
+[1,] 6000 0.45
+[2,]    0 0.55
+
+$c7$g7B
+        x   p
+[1,] 3000 0.9
+[2,]    0 0.1
+
+
+$c8
+$c8$g8A
+        x     p
+[1,] 6000 0.001
+[2,]    0 0.999
+
+$c8$g8B
+        x     p
+[1,] 3000 0.002
+[2,]    0 0.998
+
+
+$c3p
+$c3p$g3pA
+         x   p
+[1,] -4000 0.8
+[2,]     0 0.2
+
+$c3p$g3pB
+         x p
+[1,] -3000 1
+
+
+$c4p
+$c4p$g4pA
+         x   p
+[1,] -4000 0.2
+[2,]     0 0.8
+
+$c4p$g4pB
+         x    p
+[1,] -3000 0.25
+[2,]     0 0.75
+
+
+$c7p
+$c7p$g7pA
+         x    p
+[1,] -6000 0.45
+[2,]     0 0.55
+
+$c7p$g7pB
+         x   p
+[1,] -3000 0.9
+[2,]     0 0.1
+
+
+$c8p
+$c8p$g8pA
+         x     p
+[1,] -6000 0.001
+[2,]     0 0.999
+
+$c8p$g8pB
+         x     p
+[1,] -3000 0.002
+[2,]     0 0.998
+
+
+$c13
+$c13$g13A
+        x    p
+[1,] 6000 0.25
+[2,]    0 0.75
+
+$c13$g13B
+        x    p
+[1,] 4000 0.25
+[2,] 2000 0.25
+[3,]    0 0.50
+
+
+$c13p
+$c13p$g13pA
+         x    p
+[1,] -6000 0.25
+[2,]     0 0.75
+
+$c13p$g13pB
+         x    p
+[1,] -4000 0.25
+[2,] -2000 0.25
+[3,]     0 0.50
+
+
+$c14
+$c14$g14A
+        x     p
+[1,] 5000 0.001
+[2,]    0 0.999
+
+$c14$g14B
+     x p
+[1,] 5 1
+
+
+$c14p
+$c14p$g14pA
+         x     p
+[1,] -5000 0.001
+[2,]     0 0.999
+
+$c14p$g14pB
+      x p
+[1,] -5 1
+
+
+$c11
+$c11$g11A
+        x   p
+[1,] 1000 0.5
+[2,]    0 0.5
+
+$c11$g11B
+       x p
+[1,] 500 1
+
+
+$c12
+$c12$g12A
+         x   p
+[1,] -1000 0.5
+[2,]     0 0.5
+
+$c12$g12B
+        x p
+[1,] -500 1
+
+
+> # See the choice proportion data
+> proportion.A.chosen.data
+  c1   c2   c3   c4   c7   c8  c3p  c4p  c7p  c8p  c13 c13p  c14 c14p  c11  c12 
+0.18 0.83 0.20 0.65 0.14 0.73 0.92 0.42 0.92 0.30 0.18 0.70 0.72 0.17 0.16 0.69 
+> 
+> predictions <- DFT.choices(choices=choices, independent=T, alpha=.1,
++ 	beta=.1, q=2, r=2, sigma=.1, threshold=10, iterations=10000, parallel=TRUE)
+> predictions
+$c1
+   g1A    g1B 
+0.9711 0.0289 
+
+$c2
+   g2A    g2B 
+0.5963 0.4037 
+
+$c3
+   g3A    g3B 
+0.7992 0.2008 
+
+$c4
+  g4A   g4B 
+0.505 0.495 
+
+$c7
+   g7A    g7B 
+0.4821 0.5179 
+
+$c8
+   g8A    g8B 
+0.3363 0.6637 
+
+$c3p
+  g3pA   g3pB 
+0.2008 0.7992 
+
+$c4p
+ g4pA  g4pB 
+0.495 0.505 
+
+$c7p
+  g7pA   g7pB 
+0.5179 0.4821 
+
+$c8p
+  g8pA   g8pB 
+0.6637 0.3363 
+
+$c13
+  g13A   g13B 
+0.4018 0.5982 
+
+$c13p
+ g13pA  g13pB 
+0.5982 0.4018 
+
+$c14
+  g14A   g14B 
+0.0031 0.9969 
+
+$c14p
+ g14pA  g14pB 
+0.9969 0.0031 
+
+$c11
+  g11A   g11B 
+0.4959 0.5041 
+
+$c12
+  g12A   g12B 
+0.5041 0.4959 
+
+> 
+> # Run the DFT model on the choice, using a distance-dependent inhibition matrix for each choice
+> predictions <- DFT.choices(choices=choices, independent=T, alpha=.1,
++ 	beta=.1, q=2, r=2, sigma=.1, threshold=10, iterations=10000, parallel=TRUE)
+> predictions
+$c1
+   g1A    g1B 
+0.9731 0.0269 
+
+$c2
+   g2A    g2B 
+0.5859 0.4141 
+
+$c3
+   g3A    g3B 
+0.7963 0.2037 
+
+$c4
+   g4A    g4B 
+0.5017 0.4983 
+
+$c7
+   g7A    g7B 
+0.4722 0.5278 
+
+$c8
+   g8A    g8B 
+0.3234 0.6766 
+
+$c3p
+  g3pA   g3pB 
+0.1981 0.8019 
+
+$c4p
+  g4pA   g4pB 
+0.4937 0.5063 
+
+$c7p
+  g7pA   g7pB 
+0.5222 0.4778 
+
+$c8p
+  g8pA   g8pB 
+0.6818 0.3182 
+
+$c13
+  g13A   g13B 
+0.3984 0.6016 
+
+$c13p
+ g13pA  g13pB 
+0.6016 0.3984 
+
+$c14
+  g14A   g14B 
+0.0024 0.9976 
+
+$c14p
+ g14pA  g14pB 
+0.9976 0.0024 
+
+$c11
+  g11A   g11B 
+0.4889 0.5111 
+
+$c12
+  g12A   g12B 
+0.5111 0.4889 
+
+> 
+> # Extract the probability of choosing the first (A) option for each choice
+> probability.A.chosen.predictions <- sapply(predictions,function(z) {z[[1]]})
+> # Plot model predictions against choice proportions
+> plot(proportion.A.chosen.data, probability.A.chosen.predictions, 
++ 	xlab="Proportion of A Choices (Data)", ylab="Probability of an A Choice (Model)",
++ 	xlim=c(0,1), ylim=c(0,1)
++ )
+> # The fit is not very good, but then the parameters were chosen quite arbitrarily.
+> 
+> # Or you can run the DFT model using a single predefined S matrix for all choices
+> S <- matrix(c(0.95, -0.05, -0.05, -0.05, 0.95, -0.05, -0.05, -0.05, 0.95), nrow=3, byrow=T)
+> predictions <- DFT.choices(choices=choices, independent=T, S=S,
++ 	sigma=.1, threshold=10, iterations=10000, parallel=TRUE)
+> predictions
+$c1
+   g1A    g1B 
+0.9668 0.0332 
+
+$c2
+   g2A    g2B 
+0.5873 0.4127 
+
+$c3
+   g3A    g3B 
+0.7928 0.2072 
+
+$c4
+   g4A    g4B 
+0.5004 0.4996 
+
+$c7
+   g7A    g7B 
+0.4725 0.5275 
+
+$c8
+  g8A   g8B 
+0.328 0.672 
+
+$c3p
+  g3pA   g3pB 
+0.2072 0.7928 
+
+$c4p
+  g4pA   g4pB 
+0.4996 0.5004 
+
+$c7p
+  g7pA   g7pB 
+0.5275 0.4725 
+
+$c8p
+ g8pA  g8pB 
+0.672 0.328 
+
+$c13
+  g13A   g13B 
+0.4038 0.5962 
+
+$c13p
+ g13pA  g13pB 
+0.5962 0.4038 
+
+$c14
+  g14A   g14B 
+0.0722 0.9278 
+
+$c14p
+ g14pA  g14pB 
+0.9979 0.0021 
+
+$c11
+  g11A   g11B 
+0.5008 0.4992 
+
+$c12
+  g12A   g12B 
+0.4992 0.5008 
+
+> 
+> proc.time()
+   user  system elapsed 
+  4.864   0.064   5.050 
